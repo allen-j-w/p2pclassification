@@ -1,0 +1,28 @@
+This tarball contains two main programs:
+-parsernoopt: Simple classification program without any optimization and without support for the classification of traffic encapsulated with SSL.
+-parser: Main classification program. The usage is the following:
+
+	Usage: ./parser [OPTIONS] [FILE]
+	-h	Help (this message)
+	-P	Do not label connections, simply output sizes of the first packet
+	-L	Label connections (default)
+	-D	Use DOMINANT labeling heuristic
+	-C	Use CLUSTER+PORT labeling heuristic (default)
+	-S	Analyze encapsulated SSL traffic (default: no SSL parsing)
+	-m <M>	Memory optimization (O: none (default), 1:removed classed connections, 2: 1+Garbage Collection)
+	-t <f>	Apply threshold -<f> for assignment heuristic (default: 255, no threshold)
+	-p <n>	Print sizes of first <n> application packets (only valid with -P option)
+
+These classifiers rely on models given in the files model.c and model.h. This tarball contains a model based on the sizes of the first three packets, for the following applications:
+	bittorent
+	edonkey
+	ftp
+	http
+	msn
+	nntp
+	pop3
+	smtp
+	ssh
+	ssl
+
+To generate new models for your applications, please use the function printmodel from the Matlab library at http://www-rp.lip6.fr/~bernaill/earlyclassif.html.

@@ -1,0 +1,45 @@
+\subsection{TLD Two Level Distribution}
+
+The \emph{TLD} method contains two steps. In the first step, it derives the distribution properties from all individual instances within each bag. The obtained distributions are the so-called "instance-level distributions". In the second step, it aims to derive hyper-distributions from these instance-level distributions so that the positive and negative classes can be discriminated. The distributions obtained from the second step are called the "bag-level distributions".
+
+The \emph{TLD} method uses the collective assumption and assumes all individual instances within a bag contribute equally and independently to the bag label. Under this assumption, Xu(2003) uses a Gaussian model for each dimension of each bag for computational tractability. Then the question is how to derive bag-level distributions based on the instance-level distributions. According to (Xu, 2003), the problem can be considered from a Bayesian perspective(O'Hagan, 1994). For each class, we can regard the Gaussian parameters of the instance-level distributions as random and governed by a hyper-distribution. Therefore, the task is converted into estimating the parameters of the hyper-distributions(i.e. bag-level distributions) for the different classes.
+
+Lets denote the $jth$ bags with $n_{j}$ instances as $b_{j}=\{x_{j1},...,x_{jk},...,x_{jn_{j}}\}$. $\theta$ denotes the parameters of the instance-level distributions. \emph{Y} denotes the class label which can be either 0 or 1 in the two-class case. $\delta^{y}$ denotes the bag-level distribution parameters for each class ($y = 1$ for the positive class and $y = 0$ for the negative class). Therefore, $Pr(b_{j}|Y)$ can be written as $Pr(b_{j}|\delta^{y})$. The likelihood function \emph{L} can be written as follows:
+\[
+ L=\prod_{j}Pr(b_{j}|\delta^{y})=\prod_{j}\int Pr(b_{j}|\theta)Pr(\theta|\delta^{y})d\theta
+\]
+Here $Pr(b_{j}|\theta)$ represents an instance-level distribution. If we assume all individual instances within a bag are independent, we have $Pr(b_{j}|\theta)=\prod_{i}^{nj}P(x_{ij}|\theta)$ where $x_{ij}$ denotes the \emph{i}th instance in the \emph{j}th bag. If there are \emph{m} attributes and \emph{e} bags for a particular class, and we further assume all the attributes are independent, the likelihood function can be rewritten as:
+\[ L=\prod_{j=1}^{e}\left(\prod_{k=1}^{m}\left\{\int\left[\prod_{i=1}^{n_{j}}Pr(x_{jik}|\theta_{k})\right]Pr(\theta_{k}|\delta_{k}^{y})d\theta_{k}\right\}\right)
+\]
+As mentioned before, a Gaussian model is used to estimate instance-level probability $Pr(x_{jik}|\theta_{k})$ with mean $\mu_{k}$ and variance $\sigma_{k}^{2}$. So we have:
+
+\[\begin{split}
+\prod_{i=1}^{n_{j}}Pr(x_{jki}|\theta_{k})&=\prod_{i=1}^{n_{j}}Pr(x_{jki}|\mu_{k},\sigma_{k}^{2})\\
+&=(2\pi\sigma_{k}^{2})^{-n_{j}/2}\exp\left[-\frac{S_{jk}^{2}+n_{j}(\bar{x}_{jk}-\mu_{k})^2}{2\sigma_{k}^{2}}\right]
+\end{split}\]
+where $\bar{x}_{jk}=\sum_{i=1}^{n_{j}}x_{jki}/n_{j}$ and $S_{jk}^{2}=\sum_{i=1}^{n_{j}}(x_{jki}-\bar{x}_{jk})^2$.
+For the bag-level probability $Pr(\theta|\delta_{k}^{y})$, we apply the corresponding \emph{natural conjugate} form of the Gaussian distribution(O'Hagan, 1994). The natural conjugate form with four parameters($a_{k},b_{k},w_{k}$ and $m_{k}$) can be written as follows:
+\[ Pr(\theta_{k}|\delta_{k}^{y})=g(a_{k},b_{k},w_{k})(\sigma_{k}^{2})^{-\frac{b_{k}+3}{2}}\exp\left(-\frac{a_{k}+\frac{(\mu_{k}-m_{k})^2}{w_{k}}}{2\sigma_{k}^{2}}\right)
+\]
+where
+\[
+g(a_{k},b_{k},w_{k})=\frac{a_{k}^{\frac{b_{k}}{2}}2^{-\frac{b_{k}+1}{2}}}{\sqrt{(\pi w_{k})}\Gamma(b_{k}/2)}
+\]
+In this bag-level model, $\mu_{k}$ follows a normal distribution with mean $m_{k}$ and variance $w_{k}\sigma_{k}^{2}$. The variance $\sigma_{k}^{2}$ follows an \emph{Inverse-Gamma} distribution(O'Hagan, 1994). After combining the two levels' models and the integral, the likelihood function for one class can be written as:
+\[ L=\prod_{j=1}^{e}\prod_{k=1}^{m}\frac{a_{k}^{b_{k}/2}(1+n_{j}w_{k})^{(b_{k}+n_{j}-1)/2}\Gamma\left(\frac{b_{k}+n_{j}}{2}\right)}{\left[(1+n_{j}w_{k})(a_{k}+S_{jk}^{2})+n_{j}(\bar{x}_{jk}-m_{k})^2\right]^{\frac{b_{k}+n_{j}}{2}}\pi^{\frac{n_{j}}{2}}\Gamma\left(\frac{b_{k}}{2}\right)}
+\]
+The corresponding log-likelihood function is:
+\[
+LL=\sum_{k=1}^{m}\sum_{j=1}^{e}(-\log B_{jk})
+\]
+where
+\[
+B_{jk}=\frac{a_{k}^{b_{k}/2}(1+n_{j}w_{k})^{(b_{k}+n_{j}-1)/2}\Gamma(\frac{b_{k}+n_{j}}{2})}{\left[(1+n_{j}w_{k})(a_{k}+S_{jk}^{2})+n_{j}(\bar{x}_{jk}-m_{k})^2\right]^{\frac{b_{k}+n_{j}}{2}}\pi^{\frac{n_{j}}{2}}\Gamma(\frac{b_{k}}{2})}
+\]
+The \emph{TLD} approach learns the four parameters($a_{k},b_{k},w_{k}$ and $m_{k}$) by maximizing this log-likelihood function. It can be seen that the log-likelihood function only involves the sample mean $\bar{x}_{jk}$ and sum of squared errors $S_{jk}$ for bag \emph{j} and attribute \emph{k}.
+
+At classification time, we simply compute the mean and the sum of squared errors of the new bag \emph{b} and then compute the log-odds function:
+\[
+\log\frac{Pr(Y=1|b)}{Pr(Y=0|b)}=\log\frac{Pr(b|\delta^{1})Pr(Y=1)}{Pr(b|\delta^{0})Pr(Y=0)}
+\]
+where the two prior probabilities $Pr(Y=1)$ and $Pr(Y=0)$ can be estimated from the training data according to the number of bags for each class. If the resulting log-odds value is greater than zero, the new bag is classified as positive ($Y=1$). Otherwise, it is classified as negative ($Y=0$).
